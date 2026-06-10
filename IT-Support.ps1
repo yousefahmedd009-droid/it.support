@@ -1,4 +1,23 @@
-﻿Add-Type -AssemblyName System.Windows.Forms
+# ---------- Auto Update ----------
+$APPDIR = "C:\ProgramData\IT-Support"
+$LOCALVER = "$APPDIR\version.txt"
+$REMOTE_VER = "https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/version.txt"
+$REMOTE_SCRIPT = "https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/IT-Support.ps1"
+
+try {
+    $remoteVersion = (Invoke-WebRequest $REMOTE_VER -UseBasicParsing).Content.Trim()
+    $localVersion = if (Test-Path $LOCALVER) { (Get-Content $LOCALVER).Trim() } else { "" }
+
+    if ($remoteVersion -ne $localVersion) {
+        Invoke-WebRequest $REMOTE_SCRIPT -OutFile "$APPDIR\IT-Support.tmp" -UseBasicParsing
+        Move-Item "$APPDIR\IT-Support.tmp" "$APPDIR\IT-Support.ps1" -Force
+        $remoteVersion | Out-File $LOCALVER -Encoding ASCII
+        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$APPDIR\IT-Support.ps1`"" -WindowStyle Hidden
+        exit
+    }
+} catch {}
+# ---------- End Update ----------
+ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object Windows.Forms.Form

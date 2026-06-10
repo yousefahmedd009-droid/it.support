@@ -1,3 +1,55 @@
+# ==========================
+# Auto Update
+# ==========================
+
+$AppDir = "C:\ProgramData\IT-Support"
+
+if (!(Test-Path $AppDir)) {
+    New-Item -ItemType Directory -Path $AppDir -Force | Out-Null
+}
+
+$VersionFile = "$AppDir\version.txt"
+
+$RemoteScript = "https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/IT-Support.ps1"
+$RemoteVersion = "https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/version.txt"
+
+try {
+
+    $TempVersion = "$env:TEMP\remote_version.txt"
+
+    Invoke-WebRequest -Uri $RemoteVersion -OutFile $TempVersion -UseBasicParsing
+
+    $RemoteVer = (Get-Content $TempVersion -ErrorAction Stop)[0].Trim()
+
+    if (Test-Path $VersionFile) {
+        $LocalVer = (Get-Content $VersionFile)[0].Trim()
+    }
+    else {
+        $LocalVer = ""
+    }
+
+    if ($RemoteVer -ne $LocalVer) {
+
+        $NewScript = "$env:TEMP\IT-Support-New.ps1"
+
+        Invoke-WebRequest -Uri $RemoteScript -OutFile $NewScript -UseBasicParsing
+
+        Copy-Item $NewScript "$AppDir\IT-Support.ps1" -Force
+
+        Set-Content $VersionFile $RemoteVer
+
+        Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$AppDir\IT-Support.ps1`""
+
+        exit
+    }
+
+}
+catch {
+}
+
+# ==========================
+# End Auto Update
+# ==========================
  Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 

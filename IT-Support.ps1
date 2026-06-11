@@ -1,54 +1,25 @@
-# ==========================
-# Auto Update
-# ==========================
+@echo off
+set "APPDIR=C:\ProgramData\IT-Support"
+set "SCRIPT=%APPDIR%\IT-Support.ps1"
+set "SHORTCUT=%USERPROFILE%\Desktop\IT-Support.lnk"
+set "REMOTE_SCRIPT=https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/IT-Support.ps1"
+set "REMOTE_VER=https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/version.txt"
 
-$AppDir = "C:\ProgramData\IT-Support"
+if not exist "%APPDIR%" mkdir "%APPDIR%"
 
-if (!(Test-Path $AppDir)) {
-    New-Item -ItemType Directory -Path $AppDir -Force | Out-Null
-}
+powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command ^
+"Invoke-WebRequest '%REMOTE_SCRIPT%' -OutFile '%SCRIPT%' -UseBasicParsing; ^
+Invoke-WebRequest '%REMOTE_VER%' -OutFile '%APPDIR%\version.txt' -UseBasicParsing; ^
+$WS = New-Object -ComObject WScript.Shell; ^
+$SC = $WS.CreateShortcut('%SHORTCUT%'); ^
+$SC.TargetPath = 'powershell.exe'; ^
+$SC.Arguments = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""%SCRIPT%""'; ^
+$SC.IconLocation = 'shell32.dll,21'; ^
+$SC.Save(); ^
+Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""%SCRIPT%""' -WindowStyle Hidden"
 
-$VersionFile = "$AppDir\version.txt"
-
-$RemoteScript = "https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/IT-Support.ps1"
-$RemoteVersion = "https://raw.githubusercontent.com/yousefahmedd009-droid/it.support/refs/heads/main/version.txt"
-
-try {
-
-    $TempVersion = "$env:TEMP\remote_version.txt"
-
-    Invoke-WebRequest -Uri $RemoteVersion -OutFile $TempVersion -UseBasicParsing
-
-    $RemoteVer = (Get-Content $TempVersion -ErrorAction Stop)[0].Trim()
-
-    if (Test-Path $VersionFile) {
-        $LocalVer = (Get-Content $VersionFile)[0].Trim()
-    }
-    else {
-        $LocalVer = ""
-    }
-
-    if ($RemoteVer -ne $LocalVer) {
-
-        $NewScript = "$env:TEMP\IT-Support-New.ps1"
-
-        Invoke-WebRequest -Uri $RemoteScript -OutFile $NewScript -UseBasicParsing
-
-        Copy-Item $NewScript "$AppDir\IT-Support.ps1" -Force
-
-        Set-Content $VersionFile $RemoteVer
-
-        Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$AppDir\IT-Support.ps1`""
-
-        exit
-    }
-
-}
-catch {
-}
-
-# ==========================
-# End Auto Update
+del "%~f0"
+exit
 # ==========================
  Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing

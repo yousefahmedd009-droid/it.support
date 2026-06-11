@@ -14,7 +14,8 @@ try {
         Invoke-WebRequest $REMOTE_SCRIPT -OutFile "$APPDIR\IT-Support.tmp" -UseBasicParsing
         Move-Item "$APPDIR\IT-Support.tmp" "$APPDIR\IT-Support.ps1" -Force
         $remoteVersion | Out-File $LOCALVER -Encoding ASCII
-        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$APPDIR\IT-Support.ps1`"" -WindowStyle Hidden
+        $arg = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + "$APPDIR\IT-Support.ps1" + '"'
+        Start-Process powershell -ArgumentList $arg
         exit
     }
 } catch {}
